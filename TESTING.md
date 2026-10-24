@@ -23,7 +23,7 @@ Devices:
 
 | Device | Why | Tested by / result |
 |--|--|--|
-| ANBERNIC RG 40XXV | Primary target: one stick, 640×480, Mali-G31 | |
+| ANBERNIC RG 40XXV | Primary target: one stick, 640×480, Mali-G31 | claudehenchoz: boots, plays, saves (see results below) |
 | R36S | Regression check: two sticks, 640×480 | |
 | 720×720 device (e.g. RG CubeXX) | Square screen, UI layout | |
 | 1280×720 device | Higher resolution, performance | |
@@ -35,7 +35,7 @@ Firmware (PortMaster-New asks for all of these):
 | Firmware | Display / driver | Tested by / result |
 |--|--|--|
 | ROCKNIX | Wayland/sway, Panfrost or libmali | |
-| muOS | fbdev, libmali | |
+| muOS | fbdev, libmali | claudehenchoz, RG 40XXV: ✅ (see results below) |
 | dArkOS | KMSDRM, recent libmali | |
 | Knulli | KMSDRM, libmali | |
 | AmberELEC | legacy libmali | |
@@ -109,3 +109,23 @@ Firmware (PortMaster-New asks for all of these):
 | 35 | Progress is kept after going through a level exit and relaunching | | |
 | 36 | Saves are in `ports/eldritch/conf/Eldritch Reanimated/` | | |
 | 37 | Mountains of Madness (DLC) is reachable, if `dlc1.cpk` is present | | |
+
+## Results so far
+
+### RG 40XXV, muOS (2026-10-24, claudehenchoz)
+
+Port build: `main` at 2301832 (CI run 40088073551). Game data: Steam, build 412, no `dlc1.cpk`. Single-stick mode was enabled automatically (`Analog sticks: 1, single-stick mode: 1`).
+
+| # | Check | Result | Notes |
+|--|--|--|--|
+| 2 | Reaches the title screen | ✅ | |
+| 3 | `Version:` line | ✅ | `Version: 412` |
+| 4 | Depth buffer line | ✅ | `GLES depth buffer: 24-bit (GL_OES_depth24)` |
+| 5 | No `Framebuffer incomplete` | ✅ | |
+| 6 | Audio | ✅ | `SoLoud backend: SDL2 (static)` |
+| 32 | Select + Start exits cleanly | ✅ | log ends with `Termination signal received` … `Shutting down framework` |
+| 33 | Settings kept after relaunch | ✅ | seeded `prefs.cfg` kept, rewritten on exit |
+| 34 | Run resumes after Select + Start and relaunch | ✅ | `S/L: Restoring master file …` |
+| 36 | Saves in `conf/Eldritch Reanimated/` | ✅ | `/mnt/sdcard/ports/eldritch/conf/Eldritch Reanimated/` |
+
+Display: one 640×480 32-bit mode, fullscreen, no VSync. Not yet recorded: lean and diagonal movement (14–20), mirror and animated enemies (24–25), depth flicker (27), VSync (28–29), FPS (30–31).
