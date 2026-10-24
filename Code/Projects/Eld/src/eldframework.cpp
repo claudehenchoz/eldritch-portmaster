@@ -1812,7 +1812,7 @@ void EldFramework::PrepareForLoad()
 	PRINTF( "EldFramework::ToggleFullscreen\n" );
 
 #ifndef PANDORA
-#ifndef R36S
+#ifndef PORTMASTER
 	Framework3D::ToggleFullscreen();
 #endif
 #endif
@@ -2078,7 +2078,7 @@ void EldFramework::GoToLevel( const HashedString& WorldDef )
 	// Changed from legacy so files are not saved in the same place!
 	return ObjCJunk::GetUserDirectory( UserPathAppName );
 #elif BUILD_LINUX
-#ifdef R36S
+#ifdef PORTMASTER
 	// On ArkOS/PortMaster the port runs from /roms/ports/eldritch/
 	// Keep saves relative to the port directory for portability.
 	const char* const PortMasterHome = getenv( "PORTMASTER_HOME" );

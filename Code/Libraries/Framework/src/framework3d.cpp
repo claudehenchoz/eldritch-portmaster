@@ -213,7 +213,7 @@ void Framework3D::Main()
 #ifdef PANDORA
 	m_FixedFrameTime = 1.0f / 14.0f;  // 60fps cannot be sustained on the Pandora
 #endif
-#ifdef R36S
+#ifdef PORTMASTER
 	m_FixedFrameTime = 1.0f / 30.0f;  // Target 30fps on R36S (Cortex-A35 @ 1.5GHz)
 #endif
 
@@ -229,7 +229,7 @@ void Framework3D::Main()
 #ifdef PANDORA
 	sVideoCaptureFixedFrameTime = 1.0f / 8.0f;  // 30fps cannot be sustained on the Pandora (even 10fps I'm not sure)
 #endif
-#ifdef R36S
+#ifdef PORTMASTER
 	m_VideoCaptureFixedFrameTime = 1.0f / 15.0f;  // Video capture at 15fps on R36S
 #endif
 

@@ -46,4 +46,13 @@ add_library(Core ${core_src})
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
-target_link_libraries(Core z ${SDL2_LIBRARIES})
+
+# PortMaster: link zlib statically so the binary does not depend on the device's libz
+set(CORE_ZLIB z)
+if(PORTMASTER)
+	find_library(ZLIB_STATIC_LIBRARY NAMES libz.a)
+	if(ZLIB_STATIC_LIBRARY)
+		set(CORE_ZLIB ${ZLIB_STATIC_LIBRARY})
+	endif()
+endif()
+target_link_libraries(Core ${CORE_ZLIB} ${SDL2_LIBRARIES})
