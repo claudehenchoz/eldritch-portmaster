@@ -1,0 +1,8 @@
+# Shell scripts, gptokeyb configs and container files must keep LF endings,
+# even on Windows checkouts with core.autocrlf=true. CRLF breaks them on device
+# and inside Docker.
+*.sh        text eol=lf
+*.gptk      text eol=lf
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.cmake     text eol=lf
