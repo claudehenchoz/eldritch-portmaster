@@ -8,7 +8,7 @@ The game data is not included. Buy Eldritch on [Steam](https://store.steampowere
 
 Saves and settings are kept in `ports/eldritch/conf/Eldritch Reanimated/`. If you used the old R36S release, move the contents of `ports/eldritch/userdata/` there. The game saves when you quit (including Select + Start) and when you go through a level exit.
 
-On devices with one analog stick (for example the RG 40XXV), the stick looks around and the D-pad moves. Set `ELDRITCH_SINGLE_STICK=0` or `1` to override the automatic choice.
+On devices with one analog stick (for example the RG 40XXV), the stick looks around and the D-pad moves. Set `ELDRITCH_SINGLE_STICK=0` or `1` to override the automatic choice. To bind D-pad left/right in Options > Controls in this mode, hold Select while pressing the direction.
 
 ## Controls
 

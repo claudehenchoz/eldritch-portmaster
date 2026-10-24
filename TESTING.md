@@ -109,6 +109,7 @@ Firmware (PortMaster-New asks for all of these):
 | 35 | Progress is kept after going through a level exit and relaunching | | |
 | 36 | Saves are in `ports/eldritch/conf/Eldritch Reanimated/` | | |
 | 37 | Mountains of Madness (DLC) is reachable, if `dlc1.cpk` is present | | |
+| 38 | Quit from the in-game menu returns to the frontend within a few seconds (no frozen screen; see the PC results below) | | |
 
 ## Results so far
 
@@ -129,3 +130,38 @@ Port build: `main` at 2301832 (CI run 40088073551). Game data: Steam, build 412,
 | 36 | Saves in `conf/Eldritch Reanimated/` | ✅ | `/mnt/sdcard/ports/eldritch/conf/Eldritch Reanimated/` |
 
 Display: one 640×480 32-bit mode, fullscreen, no VSync. Not yet recorded: lean and diagonal movement (14–20), mirror and animated enemies (24–25), depth flicker (27), VSync (28–29), FPS (30–31).
+
+### PC: x86_64 build under WSLg (2026-10-24, run by Claude)
+
+These results come from the same engine code built for x86_64 (`-DPORTMASTER=ON`, plus a windowed non-PortMaster build for the resolution checks), running on Mesa llvmpipe (GLES 2) under WSLg with the Steam data (build 412). Input came from a virtual Xbox 360 pad created with uinput, so SDL's game controller path was exercised exactly as on a handheld. The launcher was run against a stub PortMaster `control.txt`. They do **not** replace device testing: the Mali driver, performance, VSync and the device's audio stack are untested here.
+
+| # | Check | Two-stick | Single-stick | Notes |
+|--|--|--|--|--|
+| 1 | Missing data message, clean exit | ✅ | | `pm_show_error … --title Game data missing`, exit code 1, game not started |
+| 2–5 | Title screen, `Version: 412`, 24-bit depth, no framebuffer errors | ✅ | ✅ | |
+| 6 | Audio | ✅ | | `SoLoud backend: SDL2 (static)` with PulseAudio |
+| 7 | Menus with the D-pad | ✅ | | |
+| 8 | Menus with the left stick | ✅ | | |
+| 9 | Menus with the D-pad | | ✅ | |
+| 10 | Menus with the stick | | ✅ | the stick is reported as the right stick, which the menus accept |
+| 11 | Confirm with A, back with B | ✅ | ✅ | |
+| 12 | Controls rebinding screen | | ✅ | plain D-pad left/right is ignored when binding; Select + D-pad left binds the D-pad (shown with the D-pad icon) |
+| 13 | UI at 640×480, 1024×768, 1280×720 | ✅ | | 720×720 not testable (no such mode under WSLg) |
+| 14 | Move | ✅ | ✅ | left stick / D-pad up |
+| 15 | Diagonal speed | | ✅ | unit length checked by `SingleStickTest`, not measured in game |
+| 16 | Look | ✅ | ✅ | right stick / the stick |
+| 17 | Jump (A), crouch (B) | | ✅ | crouch toggles, with the stealth vignette |
+| 18 | Use (X) | | ✅ | opens the bank chest; B closes it |
+| 19 | Lean | ✅ | ✅ | D-pad left / Select + D-pad left: view rolls, position unchanged on release |
+| 20 | D-pad left/right alone strafes, no lean | ➖ | ✅ | |
+| 22 | Attack (R2) | | ✅ | hit sparks on the chest; L2 not testable (no power equipped) |
+| 24 | Mirror shows the animated character | ✅ | | also with an `ELD_NO_VBO=ON` build |
+| 26 | `ELD_NO_VBO=ON` build renders the hub and the mirror | ✅ | | fallback works; whether it is *needed* is a Mali question |
+| 32 | SIGTERM shuts down and saves | ✅ | ✅ | `Termination signal received` … master save written |
+| 33, 34, 36 | Settings kept, run resumes, saves in `conf/` | ✅ | ✅ | through the launcher; `ANALOG_STICKS=1` → single-stick on, `2` → off |
+| — | Two-stick devices unaffected | ✅ | | no single-stick log line without `ELDRITCH_SINGLE_STICK` |
+| — | "Go to Folder…" does not run `xdg-open` | ✅ | | logs the user data path instead |
+
+Not covered on PC: 21 (climbing), 23 (L1 run, R1 cycle), 25 (enemies in a level), 27 (depth flicker on Mali), 28–31 (VSync, FPS), 35 (level exit), 37 (no `dlc1.cpk`).
+
+**Finding: shutdown can hang in audio teardown.** In 2 of 4 shutdowns with PulseAudio, the game saved and logged `Shutting down framework`, then hung forever: `SoLoud::deinit()` → `SDL_CloseAudio()` waits for SDL's PulseAudio thread, which is stuck in `pa_threaded_mainloop_wait()`. With SDL's dummy audio driver, 8 of 8 shutdowns were clean. WSLg's PulseAudio server is a likely factor, but this could also happen on a device. Select + Start is safe either way (gptokeyb sends SIGKILL after 3 s, after the save), but quitting from the in-game menu has no such fallback, hence check 38.
