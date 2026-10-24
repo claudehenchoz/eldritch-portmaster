@@ -6,8 +6,14 @@ install_manifest.txt
 *.a
 *.so
 /build
+/build-*
 /Code/build
 /.vscode
+
+# Game content must never be committed
 *.cpk
-build-r36/Projects/Eld
-ports/eldritch/eldritch/Eld
+/steamdata/
+
+# Build outputs
+ports/eldritch/eldritch/eldritch.aarch64
+/eldritch.zip
