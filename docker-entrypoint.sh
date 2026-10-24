@@ -1,19 +1,18 @@
 #!/bin/bash
+# Runs inside the Docker image: cross-compiles Eldritch for aarch64 PortMaster devices.
+# Extra arguments are passed to CMake (for example -DELD_NO_VBO=ON).
 
 set -e
 
-echo "============================================="
-echo "  Eldritch → R36S Cross-Compile (aarch64)"
-echo "============================================="
-
-BUILD_DIR="/src/build-r36s"
+BUILD_DIR="/src/build-portmaster"
 TOOLCHAIN="/src/toolchain-aarch64.cmake"
+OUTPUT="/src/ports/eldritch/eldritch/eldritch.aarch64"
 
-if [ -d "$BUILD_DIR" ]; then
-    echo "[INFO] Removing previous build directory..."
-    rm -rf "$BUILD_DIR"
-fi
+echo "============================================="
+echo "  Eldritch -> PortMaster cross-compile (aarch64)"
+echo "============================================="
 
+rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
@@ -21,10 +20,10 @@ echo ""
 echo "[1/3] Running CMake configure..."
 cmake \
     -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
-    -DR36S=ON \
+    -DPORTMASTER=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DFINAL_ENABLED=ON \
-    -DCMAKE_VERBOSE_MAKEFILE=OFF \
+    "$@" \
     /src/Code
 
 echo ""
@@ -32,11 +31,11 @@ echo "[2/3] Building ($(nproc) parallel jobs)..."
 make -j"$(nproc)" Eld
 
 echo ""
-echo "[3/3] Verifying binary..."
-file "$BUILD_DIR/Projects/Eld/Eld"
+echo "[3/3] Stripping and copying binary..."
+mkdir -p "$(dirname "$OUTPUT")"
+aarch64-linux-gnu-strip -o "$OUTPUT" "$BUILD_DIR/Projects/Eld/Eld"
+chmod +x "$OUTPUT"
+file "$OUTPUT"
 
 echo ""
-echo "============================================="
-echo "  Build successful!"
-echo "  Binary: build-r36s/Projects/Eld/Eld"
-echo "============================================="
+echo "  Build successful: ports/eldritch/eldritch/eldritch.aarch64"

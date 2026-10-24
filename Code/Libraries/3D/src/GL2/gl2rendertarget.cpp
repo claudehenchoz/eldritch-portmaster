@@ -2,6 +2,30 @@
 #include "gl2rendertarget.h"
 #include "gl2texture.h"
 
+#ifdef PORTMASTER
+#include <string.h>
+
+#ifndef GL_DEPTH_COMPONENT24_OES
+#define GL_DEPTH_COMPONENT24_OES 0x81A6
+#endif
+
+// Depth format for ERTF_D24S8 on GLES. 24-bit depth renderbuffers need
+// GL_OES_depth24; without it only 16-bit depth is guaranteed. The extension
+// string is queried once (a GL context exists by the time targets are made).
+static GLenum GetGLESDepthFormat()
+{
+	static GLenum sDepthFormat = 0;
+	if( sDepthFormat == 0 )
+	{
+		const char* const Extensions = reinterpret_cast<const char*>( glGetString( GL_EXTENSIONS ) );
+		const bool HasDepth24 = Extensions && strstr( Extensions, "GL_OES_depth24" );
+		sDepthFormat = HasDepth24 ? GL_DEPTH_COMPONENT24_OES : GL_DEPTH_COMPONENT16;
+		PRINTF( "GLES depth buffer: %s\n", HasDepth24 ? "24-bit (GL_OES_depth24)" : "16-bit" );
+	}
+	return sDepthFormat;
+}
+#endif
+
 /*static*/ GLenum GL2RenderTarget::GetGLFormat( const ERenderTargetFormat Format )
 {
 	switch( Format )
@@ -39,7 +63,12 @@
 #endif
 #ifdef HAVE_GLES
 	case ERTF_D24S8:
+		// Depth only: Eldritch never uses the stencil part of D24S8.
+#ifdef PORTMASTER
+		return GetGLESDepthFormat();
+#else
 		return GL_DEPTH_COMPONENT16;
+#endif
 #else
 	case ERTF_D24S8:
 		return GL_DEPTH24_STENCIL8;
@@ -298,14 +327,15 @@ void GL2RenderTarget::CreateFBO()
 		const GLuint	ColorTextureObject	= TextureObjectIter.GetValue();
 		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + TextureIndex, GL_TEXTURE_2D, ColorTextureObject, 0 );
 		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencilRenderBufferObject );
-		// Em GLES 2.0, anexar um GL_DEPTH_COMPONENT24_OES a um GL_STENCIL_ATTACHMENT invalida o FBO. O Eldritch não usa stencil.
-		// glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencilRenderBufferObject );
+		// The renderbuffer is depth-only (16- or 24-bit, see GetGLFormat), so it is not also
+		// attached as GL_STENCIL_ATTACHMENT: on GLES 2.0 drivers such as Mali that makes the
+		// FBO incomplete. Eldritch does not use stencil.
 		GLERRORCHECK;
 	}
 
 	const GLenum FrameBufferStatus = glCheckFramebufferStatus( GL_FRAMEBUFFER );
 	if (FrameBufferStatus != GL_FRAMEBUFFER_COMPLETE) {
-		PRINTF("FBO INCOMPLETO [R36S] Erro: 0x%04X\n", FrameBufferStatus);
+		PRINTF( "Framebuffer incomplete, status 0x%04X\n", FrameBufferStatus );
 	}
 #else
 	// FBOs were supported in GL 2.1 only by extension, but some newer drivers

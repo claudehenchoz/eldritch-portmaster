@@ -32,9 +32,27 @@
 #if BUILD_SDL
 #ifdef PANDORA
 #include <SDL2/SDL.h>
+#elif defined(PORTMASTER)
+#include <SDL.h>	// System SDL2 (its include dir is added by CMake), not the bundled copy
 #else
 #include "SDL2/SDL.h"
 #endif
+#endif
+
+#if BUILD_SDL && defined(PORTMASTER)
+#include <signal.h>
+#include <string.h>
+
+// PortMaster's exit hotkey (Select + Start) makes gptokeyb send SIGTERM, then
+// SIGKILL three seconds later. The handler only sets a flag, which is
+// async-signal-safe; TickSDLEvents() then quits exactly like on SDL_QUIT, so
+// the normal shutdown runs (saves the game in progress and writes prefs.cfg).
+static volatile sig_atomic_t gTerminationRequested = 0;
+
+static void HandleTerminationSignal( int )
+{
+	gTerminationRequested = 1;
+}
 #endif
 
 // I always want *the option* to get logs in final, but not dev.
@@ -164,6 +182,17 @@ void Framework3D::Main()
 	}
 
 	SDL_DisableScreenSaver();
+
+#ifdef PORTMASTER
+	// Installed after SDL_Init, replacing SDL's own SIGINT/SIGTERM handlers.
+	struct sigaction TerminationAction;
+	memset( &TerminationAction, 0, sizeof( TerminationAction ) );
+	TerminationAction.sa_handler = HandleTerminationSignal;
+	sigemptyset( &TerminationAction.sa_mask );
+	sigaction( SIGTERM, &TerminationAction, NULL );
+	sigaction( SIGINT, &TerminationAction, NULL );
+#endif
+
 #ifdef HAVE_GLES
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -213,8 +242,11 @@ void Framework3D::Main()
 #ifdef PANDORA
 	m_FixedFrameTime = 1.0f / 14.0f;  // 60fps cannot be sustained on the Pandora
 #endif
-#ifdef R36S
-	m_FixedFrameTime = 1.0f / 30.0f;  // Target 30fps on R36S (Cortex-A35 @ 1.5GHz)
+#ifdef PORTMASTER
+	// GLES builds use a variable timestep (see above), so this only feeds m_FrameTimeLimit
+	// below: the longest step a single frame may simulate. 1/30 x FramesLimit (5) = 1/6 s, so
+	// the game keeps real-time speed down to about 6 fps instead of 12 on slow handhelds.
+	m_FixedFrameTime = 1.0f / 30.0f;
 #endif
 
 	STATICHASH( FramesLimit );
@@ -228,9 +260,6 @@ void Framework3D::Main()
 	m_VideoCaptureFixedFrameTime = ConfigManager::GetFloat( sVideoCaptureFixedFrameTime, 1.0f / 30.0f, sFramework );
 #ifdef PANDORA
 	sVideoCaptureFixedFrameTime = 1.0f / 8.0f;  // 30fps cannot be sustained on the Pandora (even 10fps I'm not sure)
-#endif
-#ifdef R36S
-	m_VideoCaptureFixedFrameTime = 1.0f / 15.0f;  // Video capture at 15fps on R36S
 #endif
 
 	uint WindowWidth = 0;
@@ -687,6 +716,14 @@ void Framework3D::CreateSplashWindow( const uint WindowIcon, const char* const T
 /*virtual*/ bool Framework3D::TickSDLEvents()
 {
 	XTRACE_FUNCTION;
+
+#ifdef PORTMASTER
+	if( gTerminationRequested )
+	{
+		PRINTF( "Termination signal received, shutting down\n" );
+		return false;
+	}
+#endif
 
 	SDL_Event Event;
 	while( SDL_PollEvent( &Event ) )

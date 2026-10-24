@@ -1,9 +1,8 @@
 # CMake toolchain file for cross-compiling to aarch64-linux-gnu
-# Targeting: R36S (Rockchip RK3326, ARM Cortex-A35, ArkOS)
+# Targeting: aarch64 PortMaster handhelds (RK3326, H700, RK3566, ...)
 #
-# Usage:
-#   cmake -DCMAKE_TOOLCHAIN_FILE=../toolchain-aarch64.cmake \
-#         -DR36S=ON -DCMAKE_BUILD_TYPE=Release ../Code
+# Usage: see build_portmaster.sh / build_portmaster_native.sh, or
+#   cmake -DCMAKE_TOOLCHAIN_FILE=../toolchain-aarch64.cmake -DPORTMASTER=ON ../Code
 
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)

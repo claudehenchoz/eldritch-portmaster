@@ -1,59 +1,50 @@
-# Eldritch — R36S Port
+## Notes
 
-**Eldritch** is a Lovecraftian first-person roguelike by Minor Key Games.
+Thanks to David Pittman and [Minor Key Games](https://www.minorkeygames.com/) for creating Eldritch and releasing its source code under the zlib license.
 
-> **This port requires game files from a purchased copy of Eldritch.**
-> The engine is open source (zlib license); the game content is not included.
+Also thanks to [ptitSeb](https://github.com/ptitSeb/Eldritch) and rajdakin for the GLES2/ARM port of the engine, to [jardimdanificado](https://github.com/jardimdanificado/Eldritch-R36) for the R36S port, to slayer366 and kloristech for their help with it, and to claudehenchoz for the generic PortMaster packaging and single-stick controls.
 
----
+The game data is not included. Buy Eldritch on [Steam](https://store.steampowered.com/app/252630/Eldritch/) or [itch.io](https://minorkeygames.itch.io/eldritch), then copy all `.cpk` files from the game folder (Windows, Linux or macOS version) into `ports/eldritch/`, including `dlc1.cpk` (Mountains of Madness) if your copy has one. The port was prepared with the data from the current Steam release (version 408).
 
-## Installation
+Saves and settings are kept in `ports/eldritch/conf/Eldritch Reanimated/`. If you used the old R36S release, move the contents of `ports/eldritch/userdata/` there. The game saves when you quit (including Select + Start) and when you go through a level exit.
 
-### 1. Copy the port folder
+On devices with one analog stick (for example the RG 40XXV), the stick looks around and the D-pad moves. Set `ELDRITCH_SINGLE_STICK=0` or `1` to override the automatic choice.
 
-Copy the entire `eldritch/` folder to your SD card:
+## Controls
 
+Two analog sticks:
+
+| Button | Action |
+|--|--|
+| Left Analog | Move |
+| Right Analog | Look |
+| D-Pad Left / Right | Lean |
+| A | Jump |
+| B | Crouch |
+| X | Use / pick up |
+| Y | Drop weapon |
+| L1 | Run (toggle) |
+| R1 | Cycle items |
+| L2 | Use power |
+| R2 | Attack |
+| Start | Pause menu |
+| Select + Start | Quit |
+
+One analog stick:
+
+| Button | Action |
+|--|--|
+| D-Pad | Move and strafe |
+| Analog | Look |
+| Select + D-Pad Left / Right | Lean |
+| A, B, X, Y, L1, R1, L2, R2 | Same as above |
+| Start | Pause menu |
+| Select + Start | Quit |
+
+## Compile
+
+```shell
+git clone https://github.com/claudehenchoz/eldritch-portmaster.git
+cd eldritch-portmaster
+./build_portmaster.sh    # Docker, Ubuntu 20.04: ports/eldritch/eldritch/eldritch.aarch64
 ```
-/roms/ports/
-├── Eldritch.sh
-└── eldritch/
-    ├── Eld              ← compiled binary (aarch64)
-    └── ...
-```
-
-### 2. Add game data files
-
-Purchase Eldritch from [Steam](https://store.steampowered.com/app/252630/Eldritch/).
-
-Copy all the `.cpk` files from your Eldritch installation into `/roms/ports/eldritch/`.
-
-**Steam location (Linux):**
-```
-~/.steam/steam/steamapps/common/Eldritch/
-```
-
-**Steam location (Windows):**
-```
-C:\Program Files (x86)\Steam\steamapps\common\Eldritch\
-```
-
-### 3. Launch
-
-Eldritch will appear in PortMaster (or directly in the Ports section of your frontend).
-
----
-
-## Save Data
-
-Saves are stored in `/roms/ports/eldritch/userdata/`.
-
----
-
-## Known Issues
-
----
-
-## Credits
-
-- **Eldritch** by [Minor Key Games](https://eldritchgame.com/) — released under zlib license
-- **OpenPandora port** by [ptitSeb](https://github.com/ptitSeb/Eldritch) (GLES2 + OpenAL)

@@ -2,6 +2,10 @@
 #include "xinputcontroller.h"
 #include "mathcore.h"
 #include "configmanager.h"
+#include "singlestick.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 #if BUILD_WINDOWS_NO_SDL
 #include <Windows.h>
@@ -122,9 +126,18 @@ XInputController::XInputController( uint Port /*= 0*/ )
 ,	m_LeftTriggerBoolThreshold( 0.0f )
 ,	m_RightTriggerBoolThreshold( 0.0f )
 ,	m_ReceivedInputThisTick( false )
+,	m_SingleStick( false )
 {
 	memset( &m_CurrentState, 0, sizeof( SXInputState ) );
 	memset( &m_LastState, 0, sizeof( SXInputState ) );
+
+	// Opt-in at runtime; unset or "0" leaves the controls unchanged.
+	const char* const SingleStick = getenv( "ELDRITCH_SINGLE_STICK" );
+	m_SingleStick = SingleStick && SingleStick[0] != '\0' && strcmp( SingleStick, "0" ) != 0;
+	if( m_SingleStick )
+	{
+		PRINTF( "Single-stick controls: stick looks, D-pad moves, Select + D-pad left/right leans\n" );
+	}
 
 	STATICHASH( LeftThumbDeadZone );
 	STATICHASH( RightThumbDeadZone );
@@ -362,15 +375,20 @@ void XInputController::Tick( const float DeltaTime )
 			SET_BUTTON( EB_RightThumb,	SDL_CONTROLLER_BUTTON_RIGHTSTICK );
 #undef SET_BUTTON
 
+			// Single-stick mode: the physical left stick drives the right stick signals (look),
+			// with the right stick's thresholds and dead zone.
+			const SDL_GameControllerAxis LookAxisX = m_SingleStick ? SDL_CONTROLLER_AXIS_LEFTX : SDL_CONTROLLER_AXIS_RIGHTX;
+			const SDL_GameControllerAxis LookAxisY = m_SingleStick ? SDL_CONTROLLER_AXIS_LEFTY : SDL_CONTROLLER_AXIS_RIGHTY;
+
 #define SET_ANALOG_BUTTON( EB, SDLA, RANGE, CMP, TH ) m_CurrentState.m_Buttons[ EB ] = ( static_cast<float>( SDL_GameControllerGetAxis( m_Controller, SDLA ) ) / RANGE ) CMP TH
 			SET_ANALOG_BUTTON( EB_LeftThumbUp,		SDL_CONTROLLER_AXIS_LEFTY,			32768.0f,	<=, -m_LeftThumbBoolThreshold );	// Y is inverted from XInput
 			SET_ANALOG_BUTTON( EB_LeftThumbDown,	SDL_CONTROLLER_AXIS_LEFTY,			32768.0f,	>=, m_LeftThumbBoolThreshold );		// Y is inverted from XInput
 			SET_ANALOG_BUTTON( EB_LeftThumbLeft,	SDL_CONTROLLER_AXIS_LEFTX,			32768.0f,	<=, -m_LeftThumbBoolThreshold );
 			SET_ANALOG_BUTTON( EB_LeftThumbRight,	SDL_CONTROLLER_AXIS_LEFTX,			32768.0f,	>=, m_LeftThumbBoolThreshold );
-			SET_ANALOG_BUTTON( EB_RightThumbUp,		SDL_CONTROLLER_AXIS_RIGHTY,			32768.0f,	<=, -m_RightThumbBoolThreshold );	// Y is inverted from XInput
-			SET_ANALOG_BUTTON( EB_RightThumbDown,	SDL_CONTROLLER_AXIS_RIGHTY,			32768.0f,	>=, m_RightThumbBoolThreshold );	// Y is inverted from XInput
-			SET_ANALOG_BUTTON( EB_RightThumbLeft,	SDL_CONTROLLER_AXIS_RIGHTX,			32768.0f,	<=, -m_RightThumbBoolThreshold );
-			SET_ANALOG_BUTTON( EB_RightThumbRight,	SDL_CONTROLLER_AXIS_RIGHTX,			32768.0f,	>=, m_RightThumbBoolThreshold );
+			SET_ANALOG_BUTTON( EB_RightThumbUp,		LookAxisY,							32768.0f,	<=, -m_RightThumbBoolThreshold );	// Y is inverted from XInput
+			SET_ANALOG_BUTTON( EB_RightThumbDown,	LookAxisY,							32768.0f,	>=, m_RightThumbBoolThreshold );	// Y is inverted from XInput
+			SET_ANALOG_BUTTON( EB_RightThumbLeft,	LookAxisX,							32768.0f,	<=, -m_RightThumbBoolThreshold );
+			SET_ANALOG_BUTTON( EB_RightThumbRight,	LookAxisX,							32768.0f,	>=, m_RightThumbBoolThreshold );
 			SET_ANALOG_BUTTON( EB_LeftTrigger,		SDL_CONTROLLER_AXIS_TRIGGERLEFT,	32768.0f,	>=, m_LeftTriggerBoolThreshold );
 			SET_ANALOG_BUTTON( EB_RightTrigger,		SDL_CONTROLLER_AXIS_TRIGGERRIGHT,	32768.0f,	>=, m_RightTriggerBoolThreshold );
 #undef SET_ANALOG_BUTTON
@@ -378,13 +396,19 @@ void XInputController::Tick( const float DeltaTime )
 #define SET_AXIS( EA, SDLA, RANGE, FAC ) m_CurrentState.m_Axes[ EA ] = ( FAC * static_cast<float>( SDL_GameControllerGetAxis( m_Controller, SDLA ) ) ) / RANGE
 			SET_AXIS( EA_LeftThumbX,	SDL_CONTROLLER_AXIS_LEFTX,			32768.0f, 1.0f );
 			SET_AXIS( EA_LeftThumbY,	SDL_CONTROLLER_AXIS_LEFTY,			32768.0f, -1.0f );	// Y is inverted from XInput
-			SET_AXIS( EA_RightThumbX,	SDL_CONTROLLER_AXIS_RIGHTX,			32768.0f, 1.0f );
-			SET_AXIS( EA_RightThumbY,	SDL_CONTROLLER_AXIS_RIGHTY,			32768.0f, -1.0f );	// Y is inverted from XInput
+			SET_AXIS( EA_RightThumbX,	LookAxisX,							32768.0f, 1.0f );
+			SET_AXIS( EA_RightThumbY,	LookAxisY,							32768.0f, -1.0f );	// Y is inverted from XInput
 			SET_AXIS( EA_LeftTrigger,	SDL_CONTROLLER_AXIS_TRIGGERLEFT,	32768.0f, 1.0f );
 			SET_AXIS( EA_RightTrigger,	SDL_CONTROLLER_AXIS_TRIGGERRIGHT,	32768.0f, 1.0f );
 #undef SET_AXIS
 
 			ApplyDeadZones();
+
+			// After the dead zones, so D-pad diagonals keep unit length
+			if( m_SingleStick )
+			{
+				ApplySingleStickDPad();
+			}
 		}
 	}
 #endif
@@ -404,6 +428,30 @@ void XInputController::Tick( const float DeltaTime )
 			m_ReceivedInputThisTick = true;
 		}
 	}
+}
+
+// Single-stick mode: the D-pad replaces the left stick (movement). D-pad left/right
+// strafe, unless Select is held, in which case they stay D-pad buttons (lean).
+// D-pad up/down are still reported as buttons for menus (they are unbound in gameplay).
+void XInputController::ApplySingleStickDPad()
+{
+	SSingleStickDPad DPad;
+	DPad.Up		= m_CurrentState.m_Buttons[ EB_Up ];
+	DPad.Down	= m_CurrentState.m_Buttons[ EB_Down ];
+	DPad.Left	= m_CurrentState.m_Buttons[ EB_Left ];
+	DPad.Right	= m_CurrentState.m_Buttons[ EB_Right ];
+	DPad.Select	= m_CurrentState.m_Buttons[ EB_Back ];
+
+	const SSingleStickMove Move = ComputeSingleStickMove( DPad );
+
+	m_CurrentState.m_Axes[ EA_LeftThumbX ]				= Move.X;
+	m_CurrentState.m_Axes[ EA_LeftThumbY ]				= Move.Y;
+	m_CurrentState.m_Buttons[ EB_LeftThumbUp ]			= Move.Y > 0.0f;
+	m_CurrentState.m_Buttons[ EB_LeftThumbDown ]		= Move.Y < 0.0f;
+	m_CurrentState.m_Buttons[ EB_LeftThumbLeft ]		= Move.X < 0.0f;
+	m_CurrentState.m_Buttons[ EB_LeftThumbRight ]		= Move.X > 0.0f;
+	m_CurrentState.m_Buttons[ EB_Left ]					= Move.ReportLeft;
+	m_CurrentState.m_Buttons[ EB_Right ]				= Move.ReportRight;
 }
 
 void XInputController::ApplyDeadZones()

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gameList>
+  <game>
+    <path>./Eldritch.sh</path>
+    <name>Eldritch</name>
+    <desc>A first-person action game inspired by roguelikes, immersive sims and the works of H. P. Lovecraft. Explore procedurally generated dungeons, sneak or fight past horrors, and recover the souls needed to escape.</desc>
+    <releasedate>20131021T000000</releasedate>
+    <developer>Minor Key Games</developer>
+    <publisher>Minor Key Games</publisher>
+    <genre>Action</genre>
+    <image>./eldritch/screenshot.png</image>
+  </game>
+</gameList>

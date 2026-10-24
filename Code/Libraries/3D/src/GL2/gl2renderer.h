@@ -9,6 +9,8 @@ class Window;
 #if BUILD_SDL
 #ifdef PANDORA
 #include <SDL2/SDL.h>
+#elif defined(PORTMASTER)
+#include <SDL.h>	// System SDL2 (its include dir is added by CMake), not the bundled copy
 #else
 #include "SDL2/SDL.h"
 #endif

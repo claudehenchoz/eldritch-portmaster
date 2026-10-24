@@ -1,0 +1,8 @@
+screenshot.png is still missing. PortMaster-New requires one before submission.
+
+Requirements:
+- Real gameplay captured on a device or from the port, not the title screen
+- 4:3 aspect ratio, resized to 640x480 (PortMaster's guideline)
+- Saved as ports/eldritch/screenshot.png (gameinfo.xml already points to it)
+
+Delete this file once the screenshot is added.

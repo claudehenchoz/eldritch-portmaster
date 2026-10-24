@@ -1,20 +1,21 @@
 {
-  "version": "4",
-  "name": "eldritch-r36.zip",
+  "version": 4,
+  "name": "eldritch.zip",
   "items": [
-    "eldritch",
-    "Eldritch.sh"
+    "Eldritch.sh",
+    "eldritch"
   ],
   "items_opt": [],
   "attr": {
     "title": "Eldritch",
     "porter": [
-      "jardimdanificado"
+      "jardimdanificado",
+      "claudehenchoz"
     ],
-    "desc": "A first-person action game inspired by roguelikes, immersive sims, and H. P. Lovecraft.",
-    "desc_md": "A first-person action game inspired by roguelikes, immersive sims, and H. P. Lovecraft.",
-    "inst": "buy the game, put the port files at ports/, then copy all the game *.cpk files to ports/eldritch/ where the \"Eld\" file is.",
-    "inst_md": "1. buy the game\n2. put the port files at ports/\n3. copy all the game *.cpk files to ports/eldritch/ (where the \"Eld\" file is)\n4. ready to go!",
+    "desc": "A first-person action game inspired by roguelikes, immersive sims and the works of H. P. Lovecraft. Explore procedurally generated dungeons, sneak or fight past horrors, and recover the souls needed to escape.",
+    "desc_md": null,
+    "inst": "Copy all .cpk files from a purchased copy of Eldritch (Windows, Linux or macOS) into ports/eldritch/.",
+    "inst_md": "Copy all `.cpk` files from a purchased copy of Eldritch (Windows, Linux or macOS) into `ports/eldritch/`.",
     "genres": [
       "action",
       "fps"
@@ -25,8 +26,13 @@
     "runtime": [],
     "store": [
       {
-        "name": "steam",
+        "name": "Steam",
         "gameurl": "https://store.steampowered.com/app/252630/Eldritch/",
+        "developerurl": "https://www.minorkeygames.com/"
+      },
+      {
+        "name": "itch.io",
+        "gameurl": "https://minorkeygames.itch.io/eldritch",
         "developerurl": "https://www.minorkeygames.com/"
       }
     ],
@@ -35,6 +41,6 @@
     "arch": [
       "aarch64"
     ],
-    "min_glibc": ""
+    "min_glibc": "2.31"
   }
 }
