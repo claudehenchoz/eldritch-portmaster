@@ -40,7 +40,8 @@ Display::Display()
 	m_AspectRatio = static_cast<float>( m_Width ) / static_cast<float>( m_Height );
 
 	STATICHASH( Fullscreen );
-#ifdef PANDORA
+#if defined(PANDORA) || defined(PORTMASTER)
+	// Handhelds have no desktop to show a window on, so always fullscreen
 	m_Fullscreen = true;
 #else
 	m_Fullscreen = ConfigManager::GetBool( sFullscreen );
@@ -317,6 +318,11 @@ void Display::GetCurrentDisplayMode( int& Width, int& Height, int& RefreshRate )
 #if BUILD_SDL
 	PRINTF( "Enumerating SDL display modes...\n" );
 	const int NumDisplays		= SDL_GetNumVideoDisplays();
+#ifdef PORTMASTER
+	// Prefer 32-bit modes, but some fbdev/KMSDRM setups only report 16-bit ones;
+	// accept 2 bytes per pixel or more if the first pass found nothing.
+	for( uint MinBytesPerPixel = 4; MinBytesPerPixel >= 2 && DisplayModes.Size() == 0; MinBytesPerPixel -= 2 )
+#endif
 	for( int DisplayIndex = 0; DisplayIndex < NumDisplays; ++DisplayIndex )
 	{
 		const int NumModes = SDL_GetNumDisplayModes( DisplayIndex );
@@ -327,6 +333,8 @@ void Display::GetCurrentDisplayMode( int& Width, int& Height, int& RefreshRate )
 
 #ifdef PANDORA
 			if( SDL_BYTESPERPIXEL( DisplayMode.format ) >= 2 )
+#elif defined(PORTMASTER)
+			if( SDL_BYTESPERPIXEL( DisplayMode.format ) >= MinBytesPerPixel )
 #else
 			if( SDL_BYTESPERPIXEL( DisplayMode.format ) == 4 )
 #endif

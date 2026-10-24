@@ -341,8 +341,10 @@ bool Window::HasFocus() const
 #if BUILD_SDL
 	if( m_Inited )
 	{
-#ifdef PANDORA
+#if defined(PANDORA) || defined(PORTMASTER)
 		// On Pandora, SDL2 use FB access, so no real Windows / multitask here...
+		// Same on PortMaster handhelds, where the game owns the whole screen (KMSDRM,
+		// fbdev or a fullscreen compositor): pause/mute on lost focus must never trigger.
 		return true;
 #endif
 

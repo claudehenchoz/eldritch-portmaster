@@ -216,7 +216,10 @@ void Framework3D::Main()
 	m_FixedFrameTime = 1.0f / 14.0f;  // 60fps cannot be sustained on the Pandora
 #endif
 #ifdef PORTMASTER
-	m_FixedFrameTime = 1.0f / 30.0f;  // Target 30fps on R36S (Cortex-A35 @ 1.5GHz)
+	// GLES builds use a variable timestep (see above), so this only feeds m_FrameTimeLimit
+	// below: the longest step a single frame may simulate. 1/30 x FramesLimit (5) = 1/6 s, so
+	// the game keeps real-time speed down to about 6 fps instead of 12 on slow handhelds.
+	m_FixedFrameTime = 1.0f / 30.0f;
 #endif
 
 	STATICHASH( FramesLimit );
@@ -230,9 +233,6 @@ void Framework3D::Main()
 	m_VideoCaptureFixedFrameTime = ConfigManager::GetFloat( sVideoCaptureFixedFrameTime, 1.0f / 30.0f, sFramework );
 #ifdef PANDORA
 	sVideoCaptureFixedFrameTime = 1.0f / 8.0f;  // 30fps cannot be sustained on the Pandora (even 10fps I'm not sure)
-#endif
-#ifdef PORTMASTER
-	m_VideoCaptureFixedFrameTime = 1.0f / 15.0f;  // Video capture at 15fps on R36S
 #endif
 
 	uint WindowWidth = 0;
