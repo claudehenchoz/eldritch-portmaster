@@ -744,6 +744,9 @@ void EldGame::LaunchWebSite()
 #elif BUILD_MAC
 	const SimpleString Command = SimpleString::PrintF( "open %s", WebSiteURL.CStr() );
 	system( Command.CStr() );
+#elif BUILD_LINUX && defined(PORTMASTER)
+	// Handhelds have no browser or desktop session to hand this to
+	PRINTF( "LaunchWebSite: not available on PortMaster (%s)\n", WebSiteURL.CStr() );
 #elif BUILD_LINUX
 	const SimpleString Command = SimpleString::PrintF( "xdg-open %s", WebSiteURL.CStr() );
 	system( Command.CStr() );
@@ -763,6 +766,9 @@ void EldGame::OpenUserDataPath()
 #elif BUILD_MAC
 	const SimpleString Command = SimpleString::PrintF( "open %s", UserDataPath.CStr() );
 	system( Command.CStr() );
+#elif BUILD_LINUX && defined(PORTMASTER)
+	// No file manager on handhelds; just say where the files are
+	PRINTF( "OpenUserDataPath: not available on PortMaster, user data is in %s\n", UserDataPath.CStr() );
 #elif BUILD_LINUX
 	const SimpleString Command = SimpleString::PrintF( "xdg-open %s", UserDataPath.CStr() );
 	system( Command.CStr() );
@@ -796,6 +802,9 @@ void EldGame::LaunchRIPTweet()
 #elif BUILD_MAC
 	const SimpleString Command = SimpleString::PrintF( "open %s", RIPTweet.CStr() );
 	system( Command.CStr() );
+#elif BUILD_LINUX && defined(PORTMASTER)
+	// No browser on handhelds
+	PRINTF( "LaunchRIPTweet: not available on PortMaster\n" );
 #elif BUILD_LINUX
 	const SimpleString Command = SimpleString::PrintF( "xdg-open %s", RIPTweet.CStr() );
 	system( Command.CStr() );
