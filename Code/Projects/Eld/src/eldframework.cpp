@@ -2079,16 +2079,17 @@ void EldFramework::GoToLevel( const HashedString& WorldDef )
 	return ObjCJunk::GetUserDirectory( UserPathAppName );
 #elif BUILD_LINUX
 #ifdef PORTMASTER
-	// On ArkOS/PortMaster the port runs from /roms/ports/eldritch/
-	// Keep saves relative to the port directory for portability.
-	const char* const PortMasterHome = getenv( "PORTMASTER_HOME" );
-	if( PortMasterHome )
+	// PortMaster: an explicit directory wins (used as-is, plus a trailing slash).
+	// Otherwise use the stock XDG location; the launcher points XDG_DATA_HOME
+	// into the port folder.
+	const char* const EldritchUserData = getenv( "ELDRITCH_USERDATA" );
+	if( EldritchUserData && EldritchUserData[0] != '\0' )
 	{
-		return SimpleString::PrintF( "%s/eldritch/userdata/", PortMasterHome );
+		const SimpleString UserData = EldritchUserData;
+		return UserData.EndsWith( "/" ) ? UserData : ( UserData + SimpleString( "/" ) );
 	}
-	// Fallback: save next to the binary (working directory)
-	return SimpleString( "./userdata/" );
-#else
+#endif
+
 	const char* const XDGDataHome = getenv( "XDG_DATA_HOME" );
 	if( XDGDataHome )
 	{
@@ -2101,6 +2102,10 @@ void EldFramework::GoToLevel( const HashedString& WorldDef )
 		return SimpleString::PrintF( "%s/.local/share/%s/", Home, UserPathAppName.CStr() );
 	}
 
+#ifdef PORTMASTER
+	// Keep saves next to the binary (working directory) as a last resort
+	return SimpleString( "./userdata/" );
+#else
 	// Fall back to the local directory; same as legacy, but this shouldn't happen anyway
 	return SimpleString( "./" );
 #endif
