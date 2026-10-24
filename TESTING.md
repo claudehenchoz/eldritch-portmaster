@@ -13,7 +13,6 @@ Mark each item ✅ pass, ❌ fail or ➖ not tested, and add notes (what happene
 | GPU driver (Panfrost / libmali) | |
 | Resolution | |
 | Game data (store, OS, `Version:` line in log.txt) | |
-| `dlc1.cpk` present? | |
 | Port build (release tag or commit) | |
 | Single-stick mode (log line `single-stick mode: …`) | |
 
@@ -108,14 +107,14 @@ Firmware (PortMaster-New asks for all of these):
 | 34 | A run in progress resumes after Select + Start and relaunch | | |
 | 35 | Progress is kept after going through a level exit and relaunching | | |
 | 36 | Saves are in `ports/eldritch/conf/Eldritch Reanimated/` | | |
-| 37 | Mountains of Madness (DLC) is reachable, if `dlc1.cpk` is present | | |
+| 37 | Mountains of Madness (DLC, part of the current game files) loads from the blue book in the hub | | |
 | 38 | Quit from the in-game menu returns to the frontend within a few seconds (no frozen screen; see the PC results below) | | |
 
 ## Results so far
 
 ### RG 40XXV, muOS (2026-10-24, claudehenchoz)
 
-Port build: `main` at 2301832 (CI run 40088073551). Game data: Steam, build 412, no `dlc1.cpk`. Single-stick mode was enabled automatically (`Analog sticks: 1, single-stick mode: 1`).
+Port build: `main` at 2301832 (CI run 40088073551). Game data: Steam, build 412. Single-stick mode was enabled automatically (`Analog sticks: 1, single-stick mode: 1`).
 
 | # | Check | Result | Notes |
 |--|--|--|--|
@@ -128,6 +127,7 @@ Port build: `main` at 2301832 (CI run 40088073551). Game data: Steam, build 412,
 | 33 | Settings kept after relaunch | ✅ | seeded `prefs.cfg` kept, rewritten on exit |
 | 34 | Run resumes after Select + Start and relaunch | ✅ | `S/L: Restoring master file …` |
 | 36 | Saves in `conf/Eldritch Reanimated/` | ✅ | `/mnt/sdcard/ports/eldritch/conf/Eldritch Reanimated/` |
+| — | Shutting down works normally | ✅ | tester report |
 
 Display: one 640×480 32-bit mode, fullscreen, no VSync. Not yet recorded: lean and diagonal movement (14–20), mirror and animated enemies (24–25), depth flicker (27), VSync (28–29), FPS (30–31).
 
@@ -159,9 +159,13 @@ These results come from the same engine code built for x86_64 (`-DPORTMASTER=ON`
 | 26 | `ELD_NO_VBO=ON` build renders the hub and the mirror | ✅ | | fallback works; whether it is *needed* is a Mali question |
 | 32 | SIGTERM shuts down and saves | ✅ | ✅ | `Termination signal received` … master save written |
 | 33, 34, 36 | Settings kept, run resumes, saves in `conf/` | ✅ | ✅ | through the launcher; `ANALOG_STICKS=1` → single-stick on, `2` → off |
+| 37 | Mountains of Madness | ✅ | | "Strange Book" in the hub's blue fog → confirmation → snow level loads (`Rooms/MoM/Snow/…`) |
+| 38 | Quit from the in-game menu | ✅ | | process gone 0.1 s after "Yes" |
 | — | Two-stick devices unaffected | ✅ | | no single-stick log line without `ELDRITCH_SINGLE_STICK` |
 | — | "Go to Folder…" does not run `xdg-open` | ✅ | | logs the user data path instead |
 
-Not covered on PC: 21 (climbing), 23 (L1 run, R1 cycle), 25 (enemies in a level), 27 (depth flicker on Mali), 28–31 (VSync, FPS), 35 (level exit), 37 (no `dlc1.cpk`).
+Not covered on PC: 21 (climbing), 23 (L1 run, R1 cycle), 25 (enemies in a level), 27 (depth flicker on Mali), 28–31 (VSync, FPS), 35 (level exit).
 
-**Finding: shutdown can hang in audio teardown.** In 2 of 4 shutdowns with PulseAudio, the game saved and logged `Shutting down framework`, then hung forever: `SoLoud::deinit()` → `SDL_CloseAudio()` waits for SDL's PulseAudio thread, which is stuck in `pa_threaded_mainloop_wait()`. With SDL's dummy audio driver, 8 of 8 shutdowns were clean. WSLg's PulseAudio server is a likely factor, but this could also happen on a device. Select + Start is safe either way (gptokeyb sends SIGKILL after 3 s, after the save), but quitting from the in-game menu has no such fallback, hence check 38.
+**Finding: shutdown could hang in audio teardown (now bounded).** In 2 of 4 shutdowns with WSLg's PulseAudio, the game saved and logged `Shutting down framework`, then hung forever: `SoLoud::deinit()` → `SDL_CloseAudio()` waits for SDL's PulseAudio thread, which is stuck in `pa_threaded_mainloop_wait()`. With SDL's dummy audio driver, 8 of 8 shutdowns were clean, and on the RG 40XXV shutdown works normally, so WSLg is the likely cause. As a safeguard, PortMaster builds now call `alarm(5)` right after the save and `prefs.cfg` are written: if the rest of the teardown hangs, SIGALRM ends the process. Verified by forcing a 30 s stall inside `SoLoud::deinit` under gdb: the process ended 5.3 s after SIGTERM (`terminated with signal SIGALRM`), with the save and `prefs.cfg` already on disk. Normal shutdowns are unaffected (5 of 5 exited in 0.4 s).
+
+Note for PC testers: non-FINAL builds turn a failed assertion into `SIGINT` (a debugger breakpoint), which the PortMaster signal handler then handles as a clean shutdown. FINAL builds (all release builds) only log assertions.

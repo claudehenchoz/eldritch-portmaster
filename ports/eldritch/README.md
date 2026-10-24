@@ -4,7 +4,7 @@ Thanks to David Pittman and [Minor Key Games](https://www.minorkeygames.com/) fo
 
 Also thanks to [ptitSeb](https://github.com/ptitSeb/Eldritch) and rajdakin for the GLES2/ARM port of the engine, to [jardimdanificado](https://github.com/jardimdanificado/Eldritch-R36) for the R36S port, to slayer366 and kloristech for their help with it, and to claudehenchoz for the generic PortMaster packaging and single-stick controls.
 
-The game data is not included. Buy Eldritch on [Steam](https://store.steampowered.com/app/252630/Eldritch/) or [itch.io](https://minorkeygames.itch.io/eldritch), then copy all `.cpk` files from the game folder (Windows, Linux or macOS version) into `ports/eldritch/`, including `dlc1.cpk` (Mountains of Madness) if your copy has one. Tested with the current Steam release (build 412, shown as `Version:` in `log.txt`) on an RG 40XX V running muOS.
+The game data is not included. Buy Eldritch on [Steam](https://store.steampowered.com/app/252630/Eldritch/) or [itch.io](https://minorkeygames.itch.io/eldritch), then copy all `.cpk` files from the game folder (Windows, Linux or macOS version) into `ports/eldritch/`. The Mountains of Madness DLC is part of the current game files and is entered through a blue book in the hub. Tested with the current Steam release (build 412, shown as `Version:` in `log.txt`) on an RG 40XX V running muOS.
 
 Saves and settings are kept in `ports/eldritch/conf/Eldritch Reanimated/`. If you used the old R36S release, move the contents of `ports/eldritch/userdata/` there. The game saves when you quit (including Select + Start) and when you go through a level exit.
 
