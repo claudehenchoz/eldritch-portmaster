@@ -132,7 +132,12 @@ public:
 	// Used in conjunction with mouse to determine if cursor should be visible.
 	bool			m_ReceivedInputThisTick;
 
+	// ELDRITCH_SINGLE_STICK: the physical left stick acts as the right stick
+	// (look) and the D-pad as the left stick (move). See singlestick.h.
+	bool			m_SingleStick;
+
 private:
+	void			ApplySingleStickDPad();
 	void			ApplyDeadZones();
 	void			ApplyDeadZone( EAxes Axis, float DeadZone, float SaturationPoint );
 	void			SetVibration( c_uint16 Left, c_uint16 Right );
