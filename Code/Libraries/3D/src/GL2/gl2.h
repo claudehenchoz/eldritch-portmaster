@@ -31,9 +31,10 @@
 
 #if BUILD_DEV
 #define GLERRORCHECK do { const GLenum Error = glGetError(); if( Error == GL_NO_ERROR ) { break; } else { PRINTF( "GL error: 0x%04X\n", Error ); WARNDESC( "GL check" ); } } while(1)
-#elif BUILD_FINAL
-// Em vez de DoNothing, vamos printar o erro no log para debug no R36S!
-#define GLERRORCHECK do { const GLenum Error = glGetError(); if( Error != GL_NO_ERROR ) { PRINTF( "GL ERROR [R36S]: 0x%04X\n", Error ); } } while(0)
+#elif defined(ELD_GL_DEBUG)
+// Opt-in (CMake ELD_GL_DEBUG): log GL errors in non-dev builds. Off by default, because a
+// glGetError() after every call costs CPU and can stall the GPU pipeline on Mali.
+#define GLERRORCHECK do { const GLenum Error = glGetError(); if( Error != GL_NO_ERROR ) { PRINTF( "GL error: 0x%04X\n", Error ); } } while(0)
 #else
 #define GLERRORCHECK DoNothing
 #endif
