@@ -40,8 +40,11 @@ byte* ConvertShader( byte* pBuffer )
 	{
 		while( *newptr != 0x0a ) ++newptr;
 	}
-	// R36S/Mali-G31: precisamos de `highp` para que os cálculos do Vertex Shader e Z-Buffer não percam toda a precisão!
+	// Mali and other mobile GPUs: use highp where the fragment stage supports it, so vertex
+	// and depth calculations do not lose precision; fall back to mediump otherwise.
 	const char*	GLESHeader = "#version 100\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n";
+	// The header length is part of the allocation. The extra 200 bytes cover the in-place
+	// rewrite below, where each global "float x = y;" grows by 2 bytes into "#define x (y)".
 	byte*		Tmp = new byte[ strlen( (char*)newptr ) + strlen( GLESHeader ) + 200 ];
 	strcat( strcpy( (char*)Tmp, GLESHeader ), newptr );
 	// now check to remove trailing "f" after float, as it's not supported too
