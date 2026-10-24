@@ -13,6 +13,7 @@
 
 #if BUILD_LINUX
 #include <stdlib.h>
+#include <unistd.h>	// alarm()
 #endif
 
 #include "array.h"
@@ -1250,6 +1251,14 @@ void EldFramework::ShutDownWorld()
 	m_Game->ShutDown();
 
 	WritePrefsConfig();
+
+#if BUILD_LINUX && defined(PORTMASTER)
+	// Everything worth keeping is on disk now. Bound the rest of the teardown:
+	// SDL_CloseAudio() can block forever if the audio server stops answering, and
+	// quitting from the menu has no gptokeyb SIGKILL to fall back on. If shutdown
+	// is still running after a few seconds, SIGALRM's default action ends the process.
+	alarm( 5 );
+#endif
 
 	FileStream::StaticShutDown();
 	PackStream::StaticShutDown();
