@@ -39,6 +39,22 @@
 #endif
 #endif
 
+#if BUILD_SDL && defined(PORTMASTER)
+#include <signal.h>
+#include <string.h>
+
+// PortMaster's exit hotkey (Select + Start) makes gptokeyb send SIGTERM, then
+// SIGKILL three seconds later. The handler only sets a flag, which is
+// async-signal-safe; TickSDLEvents() then quits exactly like on SDL_QUIT, so
+// the normal shutdown runs (saves the game in progress and writes prefs.cfg).
+static volatile sig_atomic_t gTerminationRequested = 0;
+
+static void HandleTerminationSignal( int )
+{
+	gTerminationRequested = 1;
+}
+#endif
+
 // I always want *the option* to get logs in final, but not dev.
 // (Actual behavior is controlled by a config var.)
 #define UPLOADLOG ( ( 0 || BUILD_FINAL ) && BUILD_WINDOWS )
@@ -166,6 +182,17 @@ void Framework3D::Main()
 	}
 
 	SDL_DisableScreenSaver();
+
+#ifdef PORTMASTER
+	// Installed after SDL_Init, replacing SDL's own SIGINT/SIGTERM handlers.
+	struct sigaction TerminationAction;
+	memset( &TerminationAction, 0, sizeof( TerminationAction ) );
+	TerminationAction.sa_handler = HandleTerminationSignal;
+	sigemptyset( &TerminationAction.sa_mask );
+	sigaction( SIGTERM, &TerminationAction, NULL );
+	sigaction( SIGINT, &TerminationAction, NULL );
+#endif
+
 #ifdef HAVE_GLES
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -689,6 +716,14 @@ void Framework3D::CreateSplashWindow( const uint WindowIcon, const char* const T
 /*virtual*/ bool Framework3D::TickSDLEvents()
 {
 	XTRACE_FUNCTION;
+
+#ifdef PORTMASTER
+	if( gTerminationRequested )
+	{
+		PRINTF( "Termination signal received, shutting down\n" );
+		return false;
+	}
+#endif
 
 	SDL_Event Event;
 	while( SDL_PollEvent( &Event ) )
