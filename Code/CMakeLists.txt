@@ -23,6 +23,20 @@ if(PORTMASTER)
 	set(WITH_OPENAL OFF CACHE BOOL "" FORCE)
 	add_definitions(-DPORTMASTER)
 	message(STATUS "PortMaster target: GLES2 + SDL2 (SoLoud SDL2_STATIC audio)")
+
+	# Use the system SDL2 headers everywhere. Sources include <SDL.h> under
+	# PORTMASTER, which only resolves through this directory, never through the
+	# bundled 2.0.9 copy in Libraries/Core/src/SDL2.
+	find_package(PkgConfig QUIET)
+	if(PKG_CONFIG_FOUND)
+		pkg_check_modules(SDL2_PC QUIET sdl2)
+	endif()
+	if(SDL2_PC_FOUND)
+		include_directories(${SDL2_PC_INCLUDE_DIRS})
+	else()
+		find_package(SDL2 REQUIRED)
+		include_directories(${SDL2_INCLUDE_DIRS})
+	endif()
 endif()
 
 # Common PortMaster SoCs are Cortex-A35/A53/A55; A53 tuning suits all of them.

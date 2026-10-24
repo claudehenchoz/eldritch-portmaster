@@ -12,7 +12,13 @@ class Window;
 #endif
 
 #if BUILD_SDL
+#if defined(PANDORA)
+#include <SDL2/SDL.h>
+#elif defined(PORTMASTER)
+#include <SDL.h>	// System SDL2 (its include dir is added by CMake), not the bundled copy
+#else
 #include "SDL2/SDL.h"
+#endif
 #endif
 
 class IDataStream;
