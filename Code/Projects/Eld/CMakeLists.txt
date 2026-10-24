@@ -171,4 +171,7 @@ set(eld_src
 
 add_executable(Eld ${eld_src})
 
-target_link_libraries(Eld Math Workbench Core 3D Audio Rodin UI Framework SDL2 openal)
+target_link_libraries(Eld Math Workbench Core 3D Audio Rodin UI Framework SDL2)
+if(WITH_OPENAL)
+	target_link_libraries(Eld openal)
+endif()
