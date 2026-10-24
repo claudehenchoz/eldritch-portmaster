@@ -2,9 +2,11 @@ name: Build and Release
 
 on:
   push:
+    branches: [ main ]
     tags:
-      - 'v*' # Trigger on tags like v1.0, v2.0, etc.
-  workflow_dispatch: # Allow manual triggering
+      - 'v*' # Release on tags like v1.0, v2.0, etc.
+  pull_request:
+  workflow_dispatch: # Allow manual runs
 
 permissions:
   contents: write
@@ -12,24 +14,24 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ubuntu:20.04 # Roda tudo dentro do Ubuntu 20.04 para garantir glibc 2.31
-    
+    container: ubuntu:20.04 # Build inside Ubuntu 20.04 so the binary needs at most glibc 2.31
+
     steps:
-    - name: Pre-requisites
+    - name: Prerequisites
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         apt-get update && apt-get install -y git zip unzip
-        
+
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Multiarch and Install Toolchain
+    - name: Set up multiarch and install toolchain
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         dpkg --add-architecture arm64
-        # Configura as sources para suportar pacotes amd64 e arm64 sem conflito
+        # Restrict the default sources to amd64 and add arm64 from ports.ubuntu.com
         sed -i 's/deb http/deb [arch=amd64] http/g' /etc/apt/sources.list
         echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports focal main restricted universe multiverse" >> /etc/apt/sources.list
         echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports focal-updates main restricted universe multiverse" >> /etc/apt/sources.list
@@ -44,36 +46,38 @@ jobs:
             pkg-config \
             file \
             libsdl2-dev:arm64 \
-            libopenal-dev:arm64 \
-            libgles2-mesa-dev:arm64
+            libgles2-mesa-dev:arm64 \
+            zlib1g-dev:arm64
 
     - name: Build
       run: |
-        mkdir -p build-r36s
-        cd build-r36s
-        cmake -DCMAKE_TOOLCHAIN_FILE="../toolchain-aarch64.cmake" -DR36S=ON -DCMAKE_BUILD_TYPE=Release -DFINAL_ENABLED=ON -DCMAKE_VERBOSE_MAKEFILE=OFF ../Code
+        mkdir -p build-portmaster
+        cd build-portmaster
+        cmake -DCMAKE_TOOLCHAIN_FILE="../toolchain-aarch64.cmake" -DPORTMASTER=ON -DCMAKE_BUILD_TYPE=Release -DFINAL_ENABLED=ON ../Code
         make -j$(nproc) Eld
-        
-    - name: Package Release
+        aarch64-linux-gnu-strip -o ../ports/eldritch/eldritch/eldritch.aarch64 Projects/Eld/Eld
+        file ../ports/eldritch/eldritch/eldritch.aarch64
+
+    - name: Check binary dependencies and glibc version
+      run: bash tools/check_binary.sh ports/eldritch/eldritch/eldritch.aarch64
+
+    - name: Package
       run: |
-        mkdir -p release/eldritch/
-        cp -r ports/eldritch/* release/ || true
-        cp build-r36s/Projects/Eld/Eld release/eldritch/
-        cd release
-        zip -r ../eldritch-r36s.zip ./*
-        
-    - name: Upload Artifact
+        bash tools/package.sh eldritch.zip
+        unzip -l eldritch.zip
+
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: eldritch-r36s-zip
-        path: eldritch-r36s.zip
+        name: eldritch-portmaster
+        path: eldritch.zip
 
-    - name: Publish Release
+    - name: Publish release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
       with:
         tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
         name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'Latest Build' }}
-        files: eldritch-r36s.zip
+        files: eldritch.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
