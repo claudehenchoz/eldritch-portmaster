@@ -1,7 +1,7 @@
 #!/bin/bash
 # Packages eldritch.zip in the PortMaster user-install layout:
 #   Eldritch.sh
-#   eldritch/  (binary, gptk, licenses, README.md, port.json, gameinfo.xml, screenshot)
+#   eldritch/  (binary, gptk, licenses, README.md, port.json, gameinfo.xml, screenshot, cover)
 # Run after build_portmaster.sh. Usage: tools/package.sh [output.zip]
 
 set -e
@@ -19,7 +19,7 @@ fi
 
 cp "$PORT_SRC/Eldritch.sh" "$STAGE/"
 cp -r "$PORT_SRC/eldritch" "$STAGE/eldritch"
-for f in README.md port.json gameinfo.xml screenshot.png; do
+for f in README.md port.json gameinfo.xml screenshot.png cover.png; do
     [ -f "$PORT_SRC/$f" ] && cp "$PORT_SRC/$f" "$STAGE/eldritch/"
 done
 chmod +x "$STAGE/eldritch/eldritch.aarch64"
