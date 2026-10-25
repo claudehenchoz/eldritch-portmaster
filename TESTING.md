@@ -22,12 +22,12 @@ Devices:
 
 | Device | Why | Tested by / result |
 |--|--|--|
-| ANBERNIC RG 40XXV | Primary target: one stick, 640×480, Mali-G31 | claudehenchoz: boots, plays, saves (see results below) |
+| ANBERNIC RG 40XXV | Primary target: one stick, 640×480, Mali-G31 | claudehenchoz: ✅ gameplay, rendering, performance, saving (see results below) |
 | R36S | Regression check: two sticks, 640×480 | |
 | 720×720 device (e.g. RG CubeXX) | Square screen, UI layout | |
 | 1280×720 device | Higher resolution, performance | |
 | 1024×768 device | 4:3 at a higher resolution | |
-| Device with no analog stick | Unsupported for now (no way to look); confirm it at least boots | |
+| Device with no analog stick | Unsupported for now (no way to look); confirm it at least boots | Miyoo Mini not usable: it is 32-bit ARM, and the port is aarch64 only |
 
 Firmware (PortMaster-New asks for all of these):
 
@@ -129,7 +129,24 @@ Port build: `main` at 2301832 (CI run 40088073551). Game data: Steam, build 412.
 | 36 | Saves in `conf/Eldritch Reanimated/` | ✅ | `/mnt/sdcard/ports/eldritch/conf/Eldritch Reanimated/` |
 | — | Shutting down works normally | ✅ | tester report |
 
-Display: one 640×480 32-bit mode, fullscreen, no VSync. Not yet recorded: lean and diagonal movement (14–20), mirror and animated enemies (24–25), depth flicker (27), VSync (28–29), FPS (30–31).
+Display: one 640×480 32-bit mode, fullscreen, no VSync.
+
+Follow-up checks (2026-10-25, tester report):
+
+| # | Check | Result | Notes |
+|--|--|--|--|
+| 21 | Climbing | ✅ | |
+| 22 | Attack (R2), use power (L2) | ✅ | |
+| 23 | Run toggle (L1), cycle items (R1) | ✅ | |
+| 25 | Enemies animate | ✅ | enemies show, die when killed and can be looted |
+| 26 | `ELD_NO_VBO` retest | ➖ | not needed: 25 passed with the default build |
+| 27 | No depth flicker | ✅ | none seen, with the 24-bit depth buffer |
+| 28 | VSync off (default) | ✅ | |
+| 29 | VSync on | ✅ | works, but not needed |
+| 30–31 | FPS | ✅ | fine |
+| 35 | Level exit | ✅ | |
+
+Not yet recorded on the device: missing-data message (1), menus and rebinding (7–13), movement, look and lean (14–20), the mirror (24), Mountains of Madness (37) and menu Quit (38). All of these passed on PC (see below). No other device is available to this tester. The Miyoo Mini can't stand in for the no-stick case, because it is 32-bit ARM.
 
 ### PC: x86_64 build under WSLg (2026-10-24, run by Claude)
 
