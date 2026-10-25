@@ -33,7 +33,7 @@ Firmware (PortMaster-New asks for all of these):
 
 | Firmware | Display / driver | Tested by / result |
 |--|--|--|
-| ROCKNIX | Wayland/sway, Panfrost or libmali | |
+| ROCKNIX | Wayland/sway, Panfrost or libmali | claudehenchoz, RG 40XXV: ✅ (see results below) |
 | muOS | fbdev, libmali | claudehenchoz, RG 40XXV: ✅ (see results below) |
 | dArkOS | KMSDRM, recent libmali | |
 | Knulli | KMSDRM, libmali | |
@@ -147,6 +147,16 @@ Follow-up checks (2026-10-25, tester report):
 | 35 | Level exit | ✅ | |
 
 Not yet recorded on the device: missing-data message (1), menus and rebinding (7–13), movement, look and lean (14–20), the mirror (24), Mountains of Madness (37) and menu Quit (38). All of these passed on PC (see below). No other device is available to this tester. The Miyoo Mini can't stand in for the no-stick case, because it is 32-bit ARM.
+
+### RG 40XXV, ROCKNIX (2026-10-25, claudehenchoz)
+
+Same device, reflashed with ROCKNIX, with the same SD card and game data (Steam, build 412). The port folder was moved from muOS's `ports/eldritch/` to `roms/ports/eldritch/`, next to `Eldritch.sh`, with its saves in `conf/`.
+
+| # | Check | Result | Notes |
+|--|--|--|--|
+| 2 | Reaches the title screen and runs | ✅ | tester report |
+
+Not yet recorded: the GPU driver (Panfrost or libmali) and the log lines (checks 3–5), and the per-feature checks.
 
 ### PC: x86_64 build under WSLg (2026-10-24, run by Claude)
 
