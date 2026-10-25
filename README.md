@@ -4,6 +4,8 @@ A port of [Eldritch](https://www.minorkeygames.com/eldritch) by Minor Key Games 
 
 The game data is not included: you need the `.cpk` files from a purchased copy. See [`ports/eldritch/README.md`](ports/eldritch/README.md) for installation and controls, and [`TESTING.md`](TESTING.md) for the hardware test checklist.
 
+Current version: **0.1.0** (see [`CHANGELOG.md`](CHANGELOG.md)).
+
 ## Lineage
 
 1. Eldritch's source code, released by David Pittman / Minor Key Games under the zlib license (see `readme.txt` and `license.txt`)
@@ -54,4 +56,4 @@ cmake -S Code -B build-test -DELD_BUILD_TESTS=ON -DCMAKE_POLICY_VERSION_MINIMUM=
 cmake --build build-test --target SingleStickTest && ./build-test/UnitTests/SingleStickTest/SingleStickTest
 ```
 
-GitHub Actions builds every push and pull request, checks the binary's library and glibc requirements, and uploads `eldritch.zip`. Tags starting with `v` publish a release.
+GitHub Actions builds every push and pull request, checks the binary's library and glibc requirements, and uploads `eldritch.zip`. Tags starting with `v` (for example `v0.1.0`) publish a release.
