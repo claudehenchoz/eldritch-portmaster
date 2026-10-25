@@ -4,7 +4,7 @@ A port of [Eldritch](https://www.minorkeygames.com/eldritch) by Minor Key Games 
 
 The game data is not included: you need the `.cpk` files from a purchased copy. See [`ports/eldritch/README.md`](ports/eldritch/README.md) for installation and controls, and [`TESTING.md`](TESTING.md) for the hardware test checklist.
 
-Current version: **0.1.1** (see [`CHANGELOG.md`](CHANGELOG.md)).
+Current version: **0.1.2** (see [`CHANGELOG.md`](CHANGELOG.md)).
 
 ## Lineage
 

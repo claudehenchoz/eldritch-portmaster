@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 (2026-10-25)
+
+- Cleaned-up `cover.png`.
+- `TESTING.md`: the RG 40XXV also passes on ROCKNIX (sway, fullscreen 640×480, single-stick mode, saves carried over from muOS).
+
 ## 0.1.1 (2026-10-25)
 
 - Add `cover.png` (400×300, gameplay with the game's logo) and use it as the `gameinfo.xml` image, so frontends show a cover instead of the screenshot.
