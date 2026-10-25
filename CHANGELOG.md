@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 (2026-10-25)
+
+- Add `cover.png` (400×300, gameplay with the game's logo) and use it as the `gameinfo.xml` image, so frontends show a cover instead of the screenshot.
+
 ## 0.1.0 (2026-10-25)
 
 First release as a generic PortMaster port, based on [jardimdanificado/Eldritch-R36](https://github.com/jardimdanificado/Eldritch-R36).
