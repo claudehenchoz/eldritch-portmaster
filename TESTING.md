@@ -155,8 +155,16 @@ Same device, reflashed with ROCKNIX, with the same SD card and game data (Steam,
 | # | Check | Result | Notes |
 |--|--|--|--|
 | 2 | Reaches the title screen and runs | ✅ | tester report |
+| 3 | `Version:` line | ✅ | `Version: 412` |
+| 4 | Depth buffer line | ✅ | `GLES depth buffer: 24-bit (GL_OES_depth24)` |
+| 5 | No `Framebuffer incomplete` | ✅ | |
+| 6 | Audio backend | ✅ | `SoLoud backend: SDL2 (static)`; sound itself not reported |
+| — | Single-stick mode on automatically | ✅ | `Analog sticks: 1, single-stick mode: 1` |
+| 34 | Run resumes | ✅ | restored the master save and the hub and Water-1 world saves made under muOS |
+| 36 | Saves in `conf/Eldritch Reanimated/` | ✅ | `/roms/ports/eldritch/conf/Eldritch Reanimated/`; save and `prefs.cfg` rewritten on exit |
+| 38 | Quit from the in-game menu | ✅ | log ends with `Shutting down game` … `Shutting down framework`, with no termination signal, so the game exited by itself |
 
-Not yet recorded: the GPU driver (Panfrost or libmali) and the log lines (checks 3–5), and the per-feature checks.
+Display: sway (Wayland), one 640×480 mode, fullscreen, no VSync. Before the game window opened, PortMaster's sway helper tried 5 times to make `app_id=eldritch.aarch64` fullscreen and got `No matching node`. The engine requests fullscreen itself, so this is harmless, but a tester who sees a window that isn't fullscreen should report it. The log does not name the GPU driver (Panfrost or libmali).
 
 ### PC: x86_64 build under WSLg (2026-10-24, run by Claude)
 
